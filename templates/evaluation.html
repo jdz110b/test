@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开始评测 - 语料评测平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .nav-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .evaluation-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .evaluation-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .evaluation-card.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group select,
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .statistics {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .statistics h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .statistics p {
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 开始评测</h1>
+            <p><a href="/" class="nav-link">← 返回首页</a></p>
+        </div>
+        
+        <div class="evaluation-tabs">
+            <div class="tab active" data-tab="classify">🎯 Question分类</div>
+            <div class="tab" data-tab="generate">✍️ 答案生成</div>
+            <div class="tab" data-tab="network">🌐 联网检索识别</div>
+            <div class="tab" data-tab="evaluate">📝 QA评测</div>
+        </div>
+        
+        <!-- Question分类 -->
+        <div class="evaluation-card active" id="classify">
+            <h2>Question语料分类</h2>
+            <div class="form-group">
+                <label for="classify_file">选择文件</label>
+                <select id="classify_file">
+                    <option value="">请先上传文件</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>分类类型</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obj_sub" value="objective_subjective" checked>
+                        <label for="obj_sub">客观/主观</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="difficulty" value="difficulty_level" checked>
+                        <label for="difficulty">难度等级</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="network" value="network_search" checked>
+                        <label for="network">联网检索</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn" id="classifyBtn">开始分类</button>
+            
+            <div class="loading" id="classifyLoading">
+                <div class="loading-spinner"></div>
+                <p>正在进行分类...</p>
+            </div>
+            
+            <div class="result" id="classifyResult"></div>
+            <div class="statistics" id="classifyStats"></div>
+        </div>
+        
+        <!-- 答案生成 -->
+        <div class="evaluation-card" id="generate">
+            <h2>客观Question答案生成</h2>
+            <div class="form-group">
+                <label for="generate_file">选择文件</label>
+                <select id="generate_file">
+                    <option value="">请先上传文件</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="generate_prompt">自定义Prompt（可选）</label>
+                <textarea id="generate_prompt" rows="3" placeholder="留空使用默认Prompt"></textarea>
+            </div>
+            
+            <button class="btn" id="generateBtn">生成答案</button>
+            
+            <div class="loading" id="generateLoading">
+                <div class="loading-spinner"></div>
+                <p>正在生成答案...</p>
+            </div>
+            
+            <div class="result" id="generateResult"></div>
+            <div class="statistics" id="generateStats"></div>
+        </div>
+        
+        <!-- 联网检索识别 -->
+        <div class="evaluation-card" id="network">
+            <h2>联网知识检索识别</h2>
+            <div class="form-group">
+                <label for="network_file">选择文件</label>
+                <select id="network_file">
+                    <option value="">请先上传文件</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="network_prompt">自定义Prompt（可选）</label>
+                <textarea id="network_prompt" rows="3" placeholder="留空使用默认Prompt"></textarea>
+            </div>
+            
+            <button class="btn" id="networkBtn">识别联网检索需求</button>
+            
+            <div class="loading" id="networkLoading">
+                <div class="loading-spinner"></div>
+                <p>正在识别联网检索需求...</p>
+            </div>
+            
+            <div class="result" id="networkResult"></div>
+        </div>
+        
+        <!-- QA评测 -->
+        <div class="evaluation-card" id="evaluate">
+            <h2>QA对语料评测</h2>
+            <div class="form-group">
+                <label for="evaluate_file">选择文件</label>
+                <select id="evaluate_file">
+                    <option value="">请先上传文件</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="evaluate_prompt">自定义Prompt（可选）</label>
+                <textarea id="evaluate_prompt" rows="3" placeholder="留空使用默认Prompt"></textarea>
+            </div>
+            
+            <button class="btn" id="evaluateBtn">开始评测</button>
+            
+            <div class="loading" id="evaluateLoading">
+                <div class="loading-spinner"></div>
+                <p>正在进行评测...</p>
+            </div>
+            
+            <div class="result" id="evaluateResult"></div>
+            <div class="statistics" id="evaluateStats"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Tab切换
+        const tabs = document.querySelectorAll('.tab');
+        const cards = document.querySelectorAll('.evaluation-card');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                cards.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 分类功能
+        document.getElementById('classifyBtn').addEventListener('click', async () => {
+            const file = document.getElementById('classify_file').value;
+            if (!file) {
+                showResult('classifyResult', 'error', '请选择文件');
+                return;
+            }
+            
+            const classificationTypes = [];
+            if (document.getElementById('obj_sub').checked) classificationTypes.push('objective_subjective');
+            if (document.getElementById('difficulty').checked) classificationTypes.push('difficulty_level');
+            if (document.getElementById('network').checked) classificationTypes.push('network_search');
+            
+            if (classificationTypes.length === 0) {
+                showResult('classifyResult', 'error', '请至少选择一种分类类型');
+                return;
+            }
+            
+            showLoading('classifyLoading', true);
+            
+            try {
+                const response = await fetch('/api/classify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: file,
+                        classification_types: classificationTypes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('classifyResult', 'success', `分类完成！共处理 ${data.results.length} 条记录`);
+                    showStatistics('classifyStats', data.statistics);
+                } else {
+                    showResult('classifyResult', 'error', data.error || '分类失败');
+                }
+            } catch (error) {
+                showResult('classifyResult', 'error', '分类失败：' + error.message);
+            } finally {
+                showLoading('classifyLoading', false);
+            }
+        });
+        
+        // 答案生成功能
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const file = document.getElementById('generate_file').value;
+            if (!file) {
+                showResult('generateResult', 'error', '请选择文件');
+                return;
+            }
+            
+            const promptTemplate = document.getElementById('generate_prompt').value || null;
+            
+            showLoading('generateLoading', true);
+            
+            try {
+                const response = await fetch('/api/generate-answers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: file,
+                        prompt_template: promptTemplate
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('generateResult', 'success', `答案生成完成！共处理 ${data.results.length} 条记录`);
+                    showStatistics('generateStats', data.statistics);
+                } else {
+                    showResult('generateResult', 'error', data.error || '答案生成失败');
+                }
+            } catch (error) {
+                showResult('generateResult', 'error', '答案生成失败：' + error.message);
+            } finally {
+                showLoading('generateLoading', false);
+            }
+        });
+        
+        // 联网检索识别功能
+        document.getElementById('networkBtn').addEventListener('click', async () => {
+            const file = document.getElementById('network_file').value;
+            if (!file) {
+                showResult('networkResult', 'error', '请选择文件');
+                return;
+            }
+            
+            const promptTemplate = document.getElementById('network_prompt').value || null;
+            
+            showLoading('networkLoading', true);
+            
+            try {
+                const response = await fetch('/api/identify-network-search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: file,
+                        prompt_template: promptTemplate
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('networkResult', 'success', `联网检索识别完成！共处理 ${data.results.length} 条记录`);
+                } else {
+                    showResult('networkResult', 'error', data.error || '识别失败');
+                }
+            } catch (error) {
+                showResult('networkResult', 'error', '识别失败：' + error.message);
+            } finally {
+                showLoading('networkLoading', false);
+            }
+        });
+        
+        // QA评测功能
+        document.getElementById('evaluateBtn').addEventListener('click', async () => {
+            const file = document.getElementById('evaluate_file').value;
+            if (!file) {
+                showResult('evaluateResult', 'error', '请选择文件');
+                return;
+            }
+            
+            const promptTemplate = document.getElementById('evaluate_prompt').value || null;
+            
+            showLoading('evaluateLoading', true);
+            
+            try {
+                const response = await fetch('/api/evaluate-qa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: file,
+                        prompt_template: promptTemplate
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('evaluateResult', 'success', `QA评测完成！共处理 ${data.results.length} 条记录，无法打分：${data.unscorable_count} 条`);
+                    showStatistics('evaluateStats', data.statistics);
+                } else {
+                    showResult('evaluateResult', 'error', data.error || '评测失败');
+                }
+            } catch (error) {
+                showResult('evaluateResult', 'error', '评测失败：' + error.message);
+            } finally {
+                showLoading('evaluateLoading', false);
+            }
+        });
+        
+        function showResult(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.className = 'result ' + type;
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function showLoading(elementId, show) {
+            document.getElementById(elementId).style.display = show ? 'block' : 'none';
+        }
+        
+        function showStatistics(elementId, stats) {
+            const element = document.getElementById(elementId);
+            let html = '<h3>统计信息</h3>';
+            
+            for (const [key, value] of Object.entries(stats)) {
+                if (typeof value === 'object') {
+                    html += `<p><strong>${key}:</strong></p>`;
+                    for (const [subKey, subValue] of Object.entries(value)) {
+                        html += `<p>  ${subKey}: ${subValue}</p>`;
+                    }
+                } else {
+                    html += `<p><strong>${key}:</strong> ${value}</p>`;
+                }
+            }
+            
+            element.innerHTML = html;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

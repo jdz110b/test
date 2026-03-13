@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置管理 - 语料评测平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .nav-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .config-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .config-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .config-card.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .config-list {
+            margin-top: 20px;
+        }
+        
+        .config-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .config-item.active {
+            border: 2px solid #667eea;
+        }
+        
+        .config-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .config-info p {
+            color: #666;
+            font-size: 14px;
+            margin: 2px 0;
+        }
+        
+        .config-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .prompt-list {
+            margin-top: 20px;
+        }
+        
+        .prompt-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .prompt-item h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .prompt-item p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        .prompt-template {
+            background: white;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ 配置管理</h1>
+            <p><a href="/" class="nav-link">← 返回首页</a></p>
+        </div>
+        
+        <div class="config-tabs">
+            <div class="tab active" data-tab="llm">🤖 大模型配置</div>
+            <div class="tab" data-tab="prompt">📝 Prompt模板</div>
+        </div>
+        
+        <!-- 大模型配置 -->
+        <div class="config-card active" id="llm">
+            <h2>大模型配置</h2>
+            
+            <div class="form-group">
+                <label for="config_name">配置名称</label>
+                <input type="text" id="config_name" placeholder="例如：default, openai, custom">
+            </div>
+            
+            <div class="form-group">
+                <label for="api_url">API URL</label>
+                <input type="text" id="api_url" placeholder="https://api.openai.com/v1/chat/completions">
+            </div>
+            
+            <div class="form-group">
+                <label for="api_key">API Key</label>
+                <input type="password" id="api_key" placeholder="sk-...">
+            </div>
+            
+            <div class="form-group">
+                <label for="model">模型名称</label>
+                <input type="text" id="model" placeholder="gpt-3.5-turbo">
+            </div>
+            
+            <div class="form-group">
+                <label for="timeout">超时时间（秒）</label>
+                <input type="number" id="timeout" value="30">
+            </div>
+            
+            <div class="form-group">
+                <label for="max_retries">最大重试次数</label>
+                <input type="number" id="max_retries" value="3">
+            </div>
+            
+            <div class="form-group">
+                <label for="temperature">Temperature</label>
+                <input type="number" id="temperature" value="0.7" step="0.1" min="0" max="2">
+            </div>
+            
+            <div class="form-group">
+                <label for="max_tokens">Max Tokens</label>
+                <input type="number" id="max_tokens" value="1000">
+            </div>
+            
+            <button class="btn btn-success" id="saveConfigBtn">保存配置</button>
+            <button class="btn" id="testConfigBtn">测试连接</button>
+            
+            <div class="result" id="llmResult"></div>
+            
+            <div class="config-list">
+                <h3>已保存的配置</h3>
+                <div id="configList"></div>
+            </div>
+        </div>
+        
+        <!-- Prompt模板 -->
+        <div class="config-card" id="prompt">
+            <h2>Prompt模板管理</h2>
+            
+            <div class="form-group">
+                <label for="prompt_category">分类</label>
+                <select id="prompt_category">
+                    <option value="classification">分类</option>
+                    <option value="answer_generation">答案生成</option>
+                    <option value="answer_scoring">答案打分</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="prompt_name">Prompt名称</label>
+                <input type="text" id="prompt_name" placeholder="例如：objective_subjective">
+            </div>
+            
+            <div class="form-group">
+                <label for="prompt_display_name">显示名称</label>
+                <input type="text" id="prompt_display_name" placeholder="例如：客观/主观分类">
+            </div>
+            
+            <div class="form-group">
+                <label for="prompt_description">描述</label>
+                <input type="text" id="prompt_description" placeholder="简要描述这个Prompt的用途">
+            </div>
+            
+            <div class="form-group">
+                <label for="prompt_template">Prompt模板</label>
+                <textarea id="prompt_template" rows="6" placeholder="使用 {question} 等占位符，例如：请判断以下问题是客观题还是主观题：\n\n问题：{question}\n\n请只回答"客观"或"主观"。"></textarea>
+            </div>
+            
+            <button class="btn btn-success" id="savePromptBtn">保存Prompt</button>
+            <button class="btn" id="loadPromptsBtn">刷新列表</button>
+            
+            <div class="result" id="promptResult"></div>
+            
+            <div class="prompt-list">
+                <h3>已保存的Prompt模板</h3>
+                <div id="promptList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Tab切换
+        const tabs = document.querySelectorAll('.tab');
+        const cards = document.querySelectorAll('.config-card');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                cards.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 大模型配置
+        document.getElementById('saveConfigBtn').addEventListener('click', async () => {
+            const configData = {
+                config_name: document.getElementById('config_name').value,
+                name: document.getElementById('config_name').value,
+                api_url: document.getElementById('api_url').value,
+                api_key: document.getElementById('api_key').value,
+                model: document.getElementById('model').value,
+                timeout: parseInt(document.getElementById('timeout').value),
+                max_retries: parseInt(document.getElementById('max_retries').value),
+                temperature: parseFloat(document.getElementById('temperature').value),
+                max_tokens: parseInt(document.getElementById('max_tokens').value)
+            };
+            
+            try {
+                const response = await fetch('/api/llm/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(configData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('llmResult', 'success', '配置保存成功！');
+                    loadConfigs();
+                } else {
+                    showResult('llmResult', 'error', data.error || '保存失败');
+                }
+            } catch (error) {
+                showResult('llmResult', 'error', '保存失败：' + error.message);
+            }
+        });
+        
+        document.getElementById('testConfigBtn').addEventListener('click', async () => {
+            const configName = document.getElementById('config_name').value;
+            if (!configName) {
+                showResult('llmResult', 'error', '请输入配置名称');
+                return;
+            }
+            
+            showResult('llmResult', 'info', '正在测试连接...');
+            
+            try {
+                const response = await fetch(`/api/llm/config/${configName}/test`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('llmResult', 'success', data.message || '连接测试成功！');
+                } else {
+                    showResult('llmResult', 'error', data.error || '连接测试失败');
+                }
+            } catch (error) {
+                showResult('llmResult', 'error', '连接测试失败：' + error.message);
+            }
+        });
+        
+        // Prompt模板
+        document.getElementById('savePromptBtn').addEventListener('click', async () => {
+            const promptData = {
+                category: document.getElementById('prompt_category').value,
+                prompt_name: document.getElementById('prompt_name').value,
+                name: document.getElementById('prompt_display_name').value,
+                description: document.getElementById('prompt_description').value,
+                template: document.getElementById('prompt_template').value
+            };
+            
+            try {
+                const response = await fetch('/api/prompts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(promptData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('promptResult', 'success', 'Prompt保存成功！');
+                    loadPrompts();
+                } else {
+                    showResult('promptResult', 'error', data.error || '保存失败');
+                }
+            } catch (error) {
+                showResult('promptResult', 'error', '保存失败：' + error.message);
+            }
+        });
+        
+        document.getElementById('loadPromptsBtn').addEventListener('click', loadPrompts);
+        
+        // 加载配置列表
+        async function loadConfigs() {
+            try {
+                const response = await fetch('/api/llm/configs');
+                const configs = await response.json();
+                
+                const configList = document.getElementById('configList');
+                configList.innerHTML = configs.map(config => `
+                    <div class="config-item ${config.is_current ? 'active' : ''}">
+                        <div class="config-info">
+                            <h4>${config.display_name} ${config.is_current ? '(当前)' : ''}</h4>
+                            <p>API: ${config.api_url}</p>
+                            <p>模型: ${config.model}</p>
+                        </div>
+                        <div class="config-actions">
+                            <button class="btn" onclick="setCurrentConfig('${config.name}')">设为当前</button>
+                            <button class="btn btn-danger" onclick="deleteConfig('${config.name}')">删除</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载配置失败:', error);
+            }
+        }
+        
+        // 加载Prompt列表
+        async function loadPrompts() {
+            try {
+                const response = await fetch('/api/prompts');
+                const prompts = await response.json();
+                
+                const promptList = document.getElementById('promptList');
+                let html = '';
+                
+                for (const [category, categoryPrompts] of Object.entries(prompts)) {
+                    html += `<h4>${category}</h4>`;
+                    for (const [name, promptData] of Object.entries(categoryPrompts)) {
+                        html += `
+                            <div class="prompt-item">
+                                <h4>${promptData.name || name}</h4>
+                                <p>${promptData.description || ''}</p>
+                                <div class="prompt-template">${promptData.template}</div>
+                                <button class="btn btn-danger" onclick="deletePrompt('${category}', '${name}')" style="margin-top: 10px;">删除</button>
+                            </div>
+                        `;
+                    }
+                }
+                
+                promptList.innerHTML = html;
+            } catch (error) {
+                console.error('加载Prompt失败:', error);
+            }
+        }
+        
+        async function setCurrentConfig(configName) {
+            try {
+                const response = await fetch('/api/llm/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ config_name: configName })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('llmResult', 'success', '已设置为当前配置');
+                    loadConfigs();
+                } else {
+                    showResult('llmResult', 'error', data.error || '设置失败');
+                }
+            } catch (error) {
+                showResult('llmResult', 'error', '设置失败：' + error.message);
+            }
+        }
+        
+        async function deleteConfig(configName) {
+            if (!confirm(`确定要删除配置 "${configName}" 吗？`)) return;
+            
+            try {
+                const response = await fetch(`/api/llm/config/${configName}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('llmResult', 'success', '配置已删除');
+                    loadConfigs();
+                } else {
+                    showResult('llmResult', 'error', data.error || '删除失败');
+                }
+            } catch (error) {
+                showResult('llmResult', 'error', '删除失败：' + error.message);
+            }
+        }
+        
+        async function deletePrompt(category, promptName) {
+            if (!confirm(`确定要删除Prompt "${category}.${promptName}" 吗？`)) return;
+            
+            try {
+                const response = await fetch(`/api/prompts/${category}/${promptName}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('promptResult', 'success', 'Prompt已删除');
+                    loadPrompts();
+                } else {
+                    showResult('promptResult', 'error', data.error || '删除失败');
+                }
+            } catch (error) {
+                showResult('promptResult', 'error', '删除失败：' + error.message);
+            }
+        }
+        
+        function showResult(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.className = 'result ' + type;
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        // 初始化加载
+        loadConfigs();
+        loadPrompts();
+    </script>
+</body>
+</html>

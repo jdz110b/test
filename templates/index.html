@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语料评测平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .nav-button:hover {
+            background: #5568d3;
+        }
+        
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 语料评测平台</h1>
+            <p>基于大模型的智能语料分类、答案生成和评测系统</p>
+            <div class="nav-buttons">
+                <a href="/upload" class="nav-button">上传语料</a>
+                <a href="/evaluation" class="nav-button">开始评测</a>
+                <a href="/config" class="nav-button">配置管理</a>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <h3>📁 多格式支持</h3>
+                <p>支持CSV、TXT等多种文件格式的语料导入，自动解析和验证数据格式。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🎯 智能分类</h3>
+                <p>基于大模型的Question智能分类，支持客观/主观分类、难度等级分类、联网知识检索识别。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>✍️ 答案生成</h3>
+                <p>为客观Question自动生成准确答案，支持自定义Prompt模板和答案验证。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📊 智能评测</h3>
+                <p>对QA对语料进行智能打分，自动识别无法打分的答案，提供详细的评测报告。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔧 灵活配置</h3>
+                <p>支持多种大模型接入，可配置API和Access Key，支持自定义Prompt模板。</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📈 数据分析</h3>
+                <p>提供详细的统计分析、分数分布、模式分析等数据洞察功能。</p>
+            </div>
+        </div>
+        
+        <div class="header">
+            <h2>📋 系统状态</h2>
+            <p>
+                <span class="status-badge status-success">系统运行正常</span>
+                <span class="status-badge status-info">大模型服务已就绪</span>
+            </p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2026 语料评测平台 | Powered by AoneClaw Agent</p>
+    </div>
+</body>
+</html>
